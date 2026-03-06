@@ -4,6 +4,12 @@ ktor:
       - com.application.ApplicationKt.module
   deployment:
     port: 8080
+    host: localhost
+  database:
+    url: "jdbc:postgresql://localhost:5432/todapp"
+    driver: "org.postgresql.Driver"
+    user: "postgres"
+    password: "postgrespw"
 jwt:
   domain: "https://jwt-provider-domain/"
   audience: "jwt-audience"
