@@ -23,9 +23,6 @@ fun Application.configureRouting(repository: UserRepository) {
         }
 
     }
-    install(ContentNegotiation) {
-        json()
-    }
     routing {
 
         staticResources("/static", "static")
