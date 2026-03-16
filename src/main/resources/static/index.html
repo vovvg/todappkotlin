@@ -1,205 +1,68 @@
-<html lang="">
+<!DOCTYPE html>
+
+<html lang="en">
 <head>
-    <title>A Simple SPA For Users</title>
-    <script type="application/javascript">
-        function displayAllUsers() {
-            clearUsersTable();
-            fetchAllUsers().then(displayUsers)
-        }
+    <meta charset="UTF-8">
+    <title>Habit Tracker</title>
 
-        function displayUsersWithPriority() {
-            clearUsersTable();
-            const priority = readUserPriority();
-            fetchUsersWithPriority(priority).then(displayUsers)
-        }
+    <link rel="stylesheet" href="styles.css">
 
-        function displayUser(name) {
-            fetchUserWithName(name).then(t =>
-                UserDisplay().innerHTML =
-                    `User ${t.username} with login "${t.login}" and password "${t.password}"`
-            )
-        }
+    <script src="script.js"></script>
 
-        function deleteUser(name) {
-            deleteUserWithName(name).then(() => {
-                clearUserDisplay();
-                displayAllUsers();
-            })
-        }
-
-        function deleteUserWithName(name) {
-            return sendDELETE(`/users/${name}`)
-        }
-
-        function addNewUser() {
-            const User = buildUserFromForm();
-            sendPOST("/users", User).then(displayAllUsers);
-        }
-
-        function buildUserFromForm() {
-            return {
-                username: getUserFormValue("newUserName"),
-                login: getUserFormValue("newUserLogin"),
-                password: getUserFormValue("newUserPassword")
-            }
-        }
-
-        function getUserFormValue(controlName) {
-            return document.addUserForm[controlName].value;
-        }
-
-        function UserDisplay() {
-            return document.getElementById("currentUserDisplay");
-        }
-
-        function readUserPriority() {
-            return document.priorityForm.priority.value
-        }
-
-        function fetchUsersWithPriority(priority) {
-            return sendGET(`/users/byPriority/${priority}`);
-        }
-
-        function fetchUserWithName(name) {
-            return sendGET(`/users/byName/${name}`);
-        }
-
-        function fetchAllUsers() {
-            return sendGET("/users")
-        }
-
-        function sendGET(url) {
-            return fetch(
-                url,
-                {headers: {'Accept': 'application/json'}}
-            ).then(response => {
-                if (response.ok) {
-                    return response.json()
-                }
-                return [];
-            });
-        }
-
-        function sendPOST(url, data) {
-            return fetch(url, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(data)
-            });
-        }
-
-        function sendDELETE(url) {
-            return fetch(url, {
-                method: "DELETE"
-            });
-        }
-
-        function UsersTable() {
-            return document.getElementById("UsersTableBody");
-        }
-
-        function clearUsersTable() {
-            UsersTable().innerHTML = "";
-        }
-
-        function clearUserDisplay() {
-            UserDisplay().innerText = "None";
-        }
-
-        function displayUsers(Users) {
-            const UsersTableBody = UsersTable()
-            Users.forEach(User => {
-                const newRow = UserRow(User);
-                UsersTableBody.appendChild(newRow);
-            });
-        }
-
-        function UserRow(User) {
-            return tr([
-                td(User.username),
-                td(User.login),
-                td(viewLink(User.username)),
-                td(deleteLink(User.username)),
-            ]);
-        }
-
-        function tr(children) {
-            const node = document.createElement("tr");
-            children.forEach(child => node.appendChild(child));
-            return node;
-        }
-
-        function td(content) {
-            const node = document.createElement("td");
-            if (content instanceof Element) {
-                node.appendChild(content)
-            } else {
-                node.appendChild(document.createTextNode(content));
-            }
-            return node;
-        }
-
-        function viewLink(UserName) {
-            const node = document.createElement("a");
-            node.setAttribute(
-                "href", `javascript:displayUser("${UserName}")`
-            )
-            node.appendChild(document.createTextNode("view"));
-            return node;
-        }
-
-        function deleteLink(UserName) {
-            const node = document.createElement("a");
-            node.setAttribute(
-                "href", `javascript:deleteUser("${UserName}")`
-            )
-            node.appendChild(document.createTextNode("delete"));
-            return node;
-        }
-    </script>
 </head>
-<body onload="displayAllUsers()">
-<h1>User Manager Client</h1>
-<form action="javascript:displayAllUsers()">
-    <span>View all the Users</span>
-    <input type="submit" value="Go">
-</form>
-<form name="priorityForm" action="javascript:displayUsersWithPriority()">
-    <span>View Users with priority</span>
-    <select name="priority">
-        <option name="Low">Low</option>
-        <option name="Medium">Medium</option>
-        <option name="High">High</option>
-        <option name="Vital">Vital</option>
-    </select>
-    <input type="submit" value="Go">
-</form>
-<form name="addUserForm" action="javascript:addNewUser()">
-    <span>Create new User with</span>
-    <label for="newUserName">name</label>
-    <input type="text" id="newUserName" name="newUserName" size="10">
-    <label for="newUserLogin">login</label>
-    <input type="text" id="newUserLogin" name="newUserLogin">
-    <label for="newUserPassword">password</label>
-    <input type="text" id="newUserPassword" name="newUserPassword">
-    <input type="submit" value="Go">
-</form>
-<hr>
-<div>
-    Current User is <em id="currentUserDisplay">None</em>
+
+<body onload="showLogin()">
+
+<!-- LOGIN -->
+
+<div id="loginBlock" class="container">
+
+    <h2>Login</h2>
+
+    <input id="loginLogin" placeholder="login">
+    <input id="loginPassword" type="password" placeholder="password">
+
+    <button onclick="login()">Login</button>
+
+    <div class="link">
+        <a href="javascript:showRegister()">Create account</a>
+    </div>
+
 </div>
-<hr>
-<table>
-    <thead>
-    <tr>
-        <th>Username</th>
-        <th>Login</th>
-        <th></th>
-        <th></th>
-    </tr>
-    </thead>
-    <tbody id="UsersTableBody">
-    </tbody>
-</table>
+
+<!-- REGISTER -->
+
+<div id="registerBlock" class="container hidden">
+
+    <h2>Register</h2>
+
+    <input id="regName" placeholder="username">
+    <input id="regLogin" placeholder="login">
+    <input id="regPassword" type="password" placeholder="password">
+
+    <button onclick="register()">Register</button>
+
+    <div class="link">
+        <a href="javascript:showLogin()">Back to login</a>
+    </div>
+
+</div>
+
+<!-- DASHBOARD -->
+
+<div id="dashboard" class="container hidden">
+
+    <h2>My Habits</h2>
+
+    <div id="habitList"></div>
+
+    <h3>Add Habit</h3>
+
+    <input id="habitName" placeholder="habit name">
+
+    <button onclick="addHabit()">Add Habit</button>
+
+</div>
+
 </body>
 </html>

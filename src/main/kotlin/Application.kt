@@ -6,8 +6,8 @@ import com.application.plugins.configureMonitoring
 import com.application.plugins.configureRouting
 import com.application.plugins.configureSecurity
 import com.application.plugins.configureSerialization
-import com.application.storage.repository.local.FakeUserRepository
-import com.application.storage.repository.postgres.PostgresUserRepository
+import com.application.storage.repository.HabitRepository
+import com.application.storage.repository.UsersRepository
 import io.ktor.server.application.Application
 
 
@@ -16,11 +16,12 @@ fun main(args: Array<String>) {
 }
 
 fun Application.module() {
-    val userRepo = PostgresUserRepository()
-    configureSerialization(userRepo)
+    val userRepo = UsersRepository()
+    val habitRepo = HabitRepository()
+    configureSerialization()
     configureMonitoring()
     configureHTTP()
     configureSecurity()
     configureDatabase()
-    configureRouting(userRepo)
+    configureRouting(userRepo, habitRepo)
 }
