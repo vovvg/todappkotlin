@@ -47,15 +47,12 @@ fun Application.configureRouting(userRepository: UsersRepository, habitRepo: Hab
         post("/register") {
             val register = call.receive<RegisterRequest>()
 
-            // Проверяем, нет ли такого логина
             if (userRepository.userByLogin(register.login) != null) {
                 return@post call.respond(HttpStatusCode.Conflict, "Login already exists")
             }
 
-            // Хешируем пароль
             val hash = BCrypt.withDefaults().hashToString(12, register.password.toCharArray())
 
-            // Создаём нового пользователя через репозиторий
             val user = userRepository.addUser(
                 User(
                     username = register.username,
@@ -65,7 +62,6 @@ fun Application.configureRouting(userRepository: UsersRepository, habitRepo: Hab
                 )
             )
 
-            // Отправляем безопасный ответ на фронтенд
             call.respond(
                 HttpStatusCode.Created,
                 LoginResponse(
