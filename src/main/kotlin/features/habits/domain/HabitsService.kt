@@ -17,4 +17,9 @@ class HabitsService(
         val user = userRepository.getByLogin(login) ?: return null
         return habitsRepository.addHabit(habitName, user.id)
     }
+
+    suspend fun deleteHabit(login: String, habitId: Int): Boolean {
+        val user = userRepository.getByLogin(login) ?: return false
+        return habitsRepository.deleteHabit(habitId, user.id)
+    }
 }

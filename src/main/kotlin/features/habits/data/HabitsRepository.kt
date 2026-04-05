@@ -24,4 +24,12 @@ class HabitsRepository {
         val user = UserDAO.findById(userId) ?: return@suspendTransaction emptyList()
         user.habits.map(::habitDaoToModel)
     }
+
+    suspend fun deleteHabit(habitId: Int, userId: Int): Boolean = suspendTransaction {
+        val habit = HabitDAO.findById(habitId) ?: return@suspendTransaction false
+        if (habit.user.id.value != userId) return@suspendTransaction false
+        
+        habit.delete()
+        true
+    }
 }

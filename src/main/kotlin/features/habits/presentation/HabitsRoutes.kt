@@ -5,6 +5,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
+import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
@@ -26,6 +27,16 @@ fun Route.habitRoutes(habitsService: HabitsService) {
                 ?: return@post call.respond(HttpStatusCode.BadRequest, "User not found")
 
             call.respond(HttpStatusCode.Created, habit)
+        }
+        
+        delete("/delete") {
+            val request = call.receive<HabitDeleteRequest>()
+            
+            if (habitsService.deleteHabit(request.login, request.habitId)) {
+                call.respond(HttpStatusCode.OK, "Habit deleted successfully")
+            } else {
+                call.respond(HttpStatusCode.NotFound, "Habit not found or access denied")
+            }
         }
     }
 }
