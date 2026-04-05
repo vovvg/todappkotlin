@@ -1,17 +1,17 @@
-package com.application.storage.repository
+package com.application.features.habits.data
 
-import com.application.serializable.Habit
-import com.application.storage.dao.HabitDAO
-import com.application.storage.repository.dao.UserDAO
-import com.application.storage.dao.habitDaoToModel
-import com.application.storage.repository.dao.suspendTransaction
+import com.application.core.database.dao.HabitDAO
+import com.application.core.database.dao.UserDAO
+import com.application.core.database.dao.habitDaoToModel
+import com.application.core.database.dao.suspendTransaction
+import com.application.features.habits.domain.Habit
 
-class HabitRepository {
+class HabitsRepository {
     suspend fun addHabit(habitName: String, userId: Int): Habit = suspendTransaction {
         val user = UserDAO.findById(userId)
             ?: throw IllegalArgumentException("User not found")
 
-        val dao = HabitDAO.new {
+        val dao = HabitDAO.Companion.new {
             this.habitName = habitName
             this.streak = 0
             this.user = user

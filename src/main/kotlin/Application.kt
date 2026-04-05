@@ -6,8 +6,10 @@ import com.application.plugins.configureMonitoring
 import com.application.plugins.configureRouting
 import com.application.plugins.configureSecurity
 import com.application.plugins.configureSerialization
-import com.application.storage.repository.HabitRepository
-import com.application.storage.repository.UsersRepository
+import com.application.features.user.domain.UserService
+import com.application.features.habits.data.HabitsRepository
+import com.application.features.habits.domain.HabitsService
+import com.application.features.user.data.UserRepository
 import io.ktor.server.application.Application
 
 
@@ -16,12 +18,16 @@ fun main(args: Array<String>) {
 }
 
 fun Application.module() {
-    val userRepo = UsersRepository()
-    val habitRepo = HabitRepository()
+    val userRepo = UserRepository()
+    val habitRepo = HabitsRepository()
+
+    val userService = UserService(userRepo)
+    val habitService = HabitsService(habitRepo, userRepo)
+
     configureSerialization()
     configureMonitoring()
     configureHTTP()
     configureSecurity()
     configureDatabase()
-    configureRouting(userRepo, habitRepo)
+    configureRouting(userService, habitService)
 }

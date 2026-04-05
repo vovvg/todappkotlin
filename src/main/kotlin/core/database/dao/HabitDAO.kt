@@ -1,8 +1,7 @@
-package com.application.storage.dao
+package com.application.core.database.dao
 
-import com.application.serializable.Habit
-import com.application.storage.repository.dao.UserDAO
-import com.application.storage.tables.HabitTable
+import com.application.core.database.tables.HabitTable
+import com.application.features.habits.domain.Habit
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID

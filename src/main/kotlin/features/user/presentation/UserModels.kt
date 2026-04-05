@@ -1,4 +1,4 @@
-package com.application.serializable
+package com.application.features.user.presentation
 
 import kotlinx.serialization.Serializable
 

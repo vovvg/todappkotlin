@@ -1,10 +1,8 @@
-package com.application.storage.repository.dao
+package com.application.core.database.dao
 
-import com.application.serializable.User
-import com.application.storage.dao.HabitDAO
-import com.application.storage.dao.habitDaoToModel
-import com.application.storage.tables.HabitTable
-import com.application.storage.tables.UserTable
+import com.application.features.user.domain.User
+import com.application.core.database.tables.HabitTable
+import com.application.core.database.tables.UserTable
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass

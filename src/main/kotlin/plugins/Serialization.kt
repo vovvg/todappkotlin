@@ -1,6 +1,5 @@
 package com.application.plugins
 
-import com.application.storage.UsersRepository
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.contentnegotiation.*

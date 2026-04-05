@@ -1,4 +1,4 @@
-package com.application.storage.tables
+package com.application.core.database.tables
 
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.ReferenceOption

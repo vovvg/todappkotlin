@@ -8,7 +8,7 @@ function login(){
     const login=document.getElementById("loginLogin").value
     const password=document.getElementById("loginPassword").value
 
-    fetch("/login",{
+    fetch("/user/login",{
         method:"POST",
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({login,password})
@@ -29,7 +29,7 @@ function register(){
     const login=document.getElementById("regLogin").value
     const password=document.getElementById("regPassword").value
 
-    fetch("/register",{
+    fetch("/user/register",{
         method:"POST",
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({username,login,password})
@@ -40,7 +40,7 @@ function register(){
 
 function loadHabits(){
 
-    fetch(`/user/${currentUser.login}/habits`)
+    fetch(`/habits/${currentUser.login}`)
         .then(r=>r.json())
         .then(displayHabits)
 }
@@ -62,7 +62,7 @@ function addHabit(){
 
     const name=document.getElementById("habitName").value
 
-    fetch("/user/habits/add",{
+    fetch("/habits/add",{
         method:"POST",
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
