@@ -1,5 +1,7 @@
 package com.application.plugins
 
+import com.application.features.groups.domain.GroupService
+import com.application.features.groups.presentation.groupRoutes
 import com.application.features.habits.domain.HabitsService
 import com.application.features.habits.presentation.habitRoutes
 import com.application.features.user.presentation.userRoutes
@@ -11,7 +13,7 @@ import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Application.configureRouting(userService: UserService, habitsService: HabitsService) {
+fun Application.configureRouting(userService: UserService, habitsService: HabitsService, groupService: GroupService) {
     install(StatusPages) {
         exception<Throwable> { call, cause ->
             call.respondText(text = "500: $cause", status = HttpStatusCode.InternalServerError)
@@ -23,5 +25,6 @@ fun Application.configureRouting(userService: UserService, habitsService: Habits
 
         userRoutes(userService)
         habitRoutes(habitsService)
+        groupRoutes(groupService)
     }
 }

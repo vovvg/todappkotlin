@@ -16,8 +16,8 @@ class HabitDAO(id: EntityID<Int>) : IntEntity(id) {
     var user by UserDAO referencedOn HabitTable.user
 }
 
-fun habitDaoToModel(dao: HabitDAO) = Habit(
-    id = dao.id.value,
-    habitName = dao.habitName,
-    streak = dao.streak
+fun HabitDAO.toModel() = Habit(
+    id = this.id.value,
+    habitName = this.habitName,
+    streak = this.streak
 )

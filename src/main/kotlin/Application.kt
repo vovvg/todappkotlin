@@ -1,5 +1,7 @@
 package com.application
 
+import com.application.features.groups.data.GroupRepository
+import com.application.features.groups.domain.GroupService
 import com.application.plugins.configureDatabase
 import com.application.plugins.configureHTTP
 import com.application.plugins.configureMonitoring
@@ -20,14 +22,16 @@ fun main(args: Array<String>) {
 fun Application.module() {
     val userRepo = UserRepository()
     val habitRepo = HabitsRepository()
+    val groupsRepo = GroupRepository();
 
     val userService = UserService(userRepo)
     val habitService = HabitsService(habitRepo, userRepo)
+    val groupService = GroupService(groupsRepo, userRepo)
 
     configureSerialization()
     configureMonitoring()
     configureHTTP()
     configureSecurity()
     configureDatabase()
-    configureRouting(userService, habitService)
+    configureRouting(userService, habitService, groupService)
 }

@@ -2,6 +2,7 @@ package com.application.core.database.dao
 
 import com.application.features.user.domain.User
 import com.application.core.database.tables.HabitTable
+import com.application.core.database.tables.UserGroupTable
 import com.application.core.database.tables.UserTable
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.dao.IntEntity
@@ -18,15 +19,16 @@ class UserDAO(id: EntityID<Int>) : IntEntity(id) {
     var login by UserTable.login
     var passwordHash by UserTable.passwordHash
 
-    val habits by HabitDAO.Companion referrersOn HabitTable.user
+    val habits by HabitDAO referrersOn HabitTable.user
+    var groups by GroupDAO via UserGroupTable
 }
 
-fun userDaoToModel(dao: UserDAO) = User(
-    id = dao.id.value,
-    username = dao.username,
-    login = dao.login,
-    passwordHash = dao.passwordHash,
-    habits = dao.habits.map { habitDaoToModel(it) }
+fun UserDAO.toModel() = User(
+    id = this.id.value,
+    username = this.username,
+    login = this.login,
+    passwordHash = this.passwordHash,
+    habits = this.habits.map { it.toModel() }
 )
 
 suspend fun <T> suspendTransaction(block: Transaction.() -> T): T =

@@ -1,20 +1,20 @@
 package com.application.features.user.data
 
-import com.application.features.user.domain.User
 import com.application.core.database.dao.UserDAO
 import com.application.core.database.dao.suspendTransaction
-import com.application.core.database.dao.userDaoToModel
+import com.application.core.database.dao.toModel
 import com.application.core.database.tables.UserTable
+import com.application.features.user.domain.User
 
 class UserRepository {
     suspend fun allUser(): List<User> = suspendTransaction {
-        UserDAO.all().map(::userDaoToModel)
+        UserDAO.all().map { it.toModel() }
     }
 
     suspend fun getByLogin(login: String): User? = suspendTransaction {
-        UserDAO.Companion.find { UserTable.login eq login }
+        UserDAO.find { UserTable.login eq login }
             .limit(1)
-            .map(::userDaoToModel)
+            .map { it.toModel() }
             .firstOrNull()
     }
 
@@ -24,7 +24,7 @@ class UserRepository {
             login = user.login
             passwordHash = user.passwordHash
         }
-        userDaoToModel(dao)
+        dao.toModel()
     }
 
     suspend fun remove(login: String): Boolean {

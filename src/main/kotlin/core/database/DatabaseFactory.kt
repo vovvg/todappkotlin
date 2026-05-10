@@ -1,6 +1,8 @@
 package com.application.core.database
 
+import com.application.core.database.tables.GroupTable
 import com.application.core.database.tables.HabitTable
+import com.application.core.database.tables.UserGroupTable
 import com.application.core.database.tables.UserTable
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
@@ -27,7 +29,7 @@ object DatabaseFactory {
         Database.Companion.connect(dataSource)
 
         transaction {
-            SchemaUtils.create(UserTable, HabitTable)
+            SchemaUtils.create(UserTable, HabitTable, GroupTable, UserGroupTable)
         }
     }
 }

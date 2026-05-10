@@ -2,8 +2,8 @@ package com.application.features.habits.data
 
 import com.application.core.database.dao.HabitDAO
 import com.application.core.database.dao.UserDAO
-import com.application.core.database.dao.habitDaoToModel
 import com.application.core.database.dao.suspendTransaction
+import com.application.core.database.dao.toModel
 import com.application.features.habits.domain.Habit
 
 class HabitsRepository {
@@ -17,12 +17,12 @@ class HabitsRepository {
             this.user = user
         }
 
-        habitDaoToModel(dao)
+        dao.toModel()
     }
 
     suspend fun getUserHabits(userId: Int): List<Habit> = suspendTransaction {
         val user = UserDAO.findById(userId) ?: return@suspendTransaction emptyList()
-        user.habits.map(::habitDaoToModel)
+        user.habits.map { it.toModel() }
     }
 
     suspend fun deleteHabit(habitId: Int, userId: Int): Boolean = suspendTransaction {
