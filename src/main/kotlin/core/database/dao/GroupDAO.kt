@@ -1,6 +1,7 @@
 package com.application.core.database.dao
 
 import com.application.core.database.tables.GroupTable
+import com.application.core.database.tables.HabitTable
 import com.application.core.database.tables.UserGroupTable
 import com.application.features.groups.domain.Group
 import com.application.features.habits.domain.Habit
@@ -15,10 +16,12 @@ class GroupDAO(id: EntityID<Int>) : IntEntity(id) {
     var name by GroupTable.name
 
     var members by UserDAO via UserGroupTable
+    val habits by HabitDAO optionalReferrersOn HabitTable.ownerGroup
 }
 
 fun GroupDAO.toModel() = Group(
     id = this.id.value,
     name = this.name,
-    members = this.members.map { it.toModel() }
+    members = this.members.map { it.toModel() },
+    habits = this.habits.map { it.toModel() }
 )

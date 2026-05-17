@@ -1,16 +1,13 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Habit Tracker</title>
 
     <link rel="stylesheet" href="styles.css">
-
-    <script src="script.js"></script>
-
+    <script defer src="script.js"></script>
 </head>
-
 <body>
 
 <!-- LOGIN -->
@@ -19,8 +16,8 @@
 
     <h2>Login</h2>
 
-    <input id="loginLogin" placeholder="login">
-    <input id="loginPassword" type="password" placeholder="password">
+    <input id="loginLogin" placeholder="Login">
+    <input id="loginPassword" type="password" placeholder="Password">
 
     <button onclick="login()">Login</button>
 
@@ -36,9 +33,9 @@
 
     <h2>Register</h2>
 
-    <input id="regName" placeholder="username">
-    <input id="regLogin" placeholder="login">
-    <input id="regPassword" type="password" placeholder="password">
+    <input id="regName" placeholder="Username">
+    <input id="regLogin" placeholder="Login">
+    <input id="regPassword" type="password" placeholder="Password">
 
     <button onclick="register()">Register</button>
 
@@ -53,23 +50,88 @@
 <div id="dashboard" class="container hidden">
 
     <div class="dashboard-header">
-        <h2>My Habits</h2>
+        <h2 id="welcomeTitle">My Dashboard</h2>
     </div>
 
-    <div id="habitList"></div>
+    <!-- HABITS -->
 
-    <div class="add-habit-container">
-        <h3>Add New Habit</h3>
+    <section>
+
+        <h3>My Habits</h3>
+
+        <div id="habitList"></div>
+
         <div class="input-group">
-            <input id="habitName" placeholder="Enter habit name" type="text">
-            <button onclick="addHabit()">Add</button>
+            <input id="habitName" placeholder="Habit name">
+            <button onclick="addHabit()">Add Habit</button>
         </div>
+
+        <div class="empty-state" id="emptyState">
+            No habits yet
+        </div>
+
+    </section>
+
+    <hr>
+
+    <!-- GROUPS -->
+
+    <section>
+
+        <h3>My Groups</h3>
+
+        <div id="groupList"></div>
+
+        <div class="input-group">
+            <input id="groupName" placeholder="Group name">
+            <button onclick="createGroup()">Create Group</button>
+        </div>
+
+        <div class="empty-state" id="emptyGroupState">
+            No groups yet
+        </div>
+
+    </section>
+
+    <button id="logoutButton" onclick="logout()">
+        Logout
+    </button>
+
+</div>
+<div id="groupDetails" class="container hidden">
+
+    <button onclick="backToDashboard()">
+        ← Back
+    </button>
+
+    <h2 id="groupTitle"></h2>
+
+    <h3>Members</h3>
+    <div id="groupMembers"></div>
+
+    <h3>Habits</h3>
+    <div id="groupHabits"></div>
+
+    <hr>
+
+    <div class="input-group">
+        <input
+                id="groupUserInput"
+                placeholder="User login">
+        <button onclick="addMemberToOpenedGroup()">
+            Add User
+        </button>
     </div>
 
-    <div class="empty-state" id="emptyState">
-        <p>No habits yet. Add your first habit to get started!</p>
+    <div class="input-group">
+        <input
+                id="groupHabitInput"
+                placeholder="Habit name">
+        <button onclick="addHabitToOpenedGroup()">
+            Add Habit
+        </button>
     </div>
-    <button id="logoutButton" onclick="logout()">Logout</button>
+
 </div>
 
 </body>

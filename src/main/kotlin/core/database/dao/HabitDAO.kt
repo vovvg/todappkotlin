@@ -1,5 +1,6 @@
 package com.application.core.database.dao
 
+import com.application.core.database.tables.HabitProgressTable
 import com.application.core.database.tables.HabitTable
 import com.application.features.habits.domain.Habit
 import org.jetbrains.exposed.dao.IntEntity
@@ -11,13 +12,14 @@ class HabitDAO(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<HabitDAO>(HabitTable)
 
     var habitName by HabitTable.habitName
-    var streak by HabitTable.streak
 
-    var user by UserDAO referencedOn HabitTable.user
+    val progress by HabitProgressDAO referrersOn HabitProgressTable.habit
+
+    var ownerUser by UserDAO optionalReferencedOn HabitTable.ownerUser
+    var ownerGroup by GroupDAO optionalReferencedOn HabitTable.ownerGroup
 }
 
 fun HabitDAO.toModel() = Habit(
     id = this.id.value,
-    habitName = this.habitName,
-    streak = this.streak
+    habitName = this.habitName
 )

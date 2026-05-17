@@ -5,75 +5,124 @@ import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.util.reflect.TypeInfo
 
-fun Route.groupRoutes(service: GroupService) {
+fun Route.groupRoutes(
+    service: GroupService
+) {
+
+    route("/users") {
+
+        get("/{login}/groups") {
+
+            val login =
+                call.parameters["login"]
+                    ?: return@get call.respond(
+                        HttpStatusCode.BadRequest
+                    )
+
+            val groups =
+                service.getGroupsByUserLogin(login)
+
+            call.respond(
+                groups.map { it.toResponse() }
+            )
+        }
+    }
 
     route("/groups") {
 
-        post("/create") {
+        get("/{groupId}") {
 
-            val request = call.receive<CreateGroupRequest>()
+            val groupId =
+                call.parameters["groupId"]
+                    ?.toIntOrNull()
+                    ?: return@get call.respond(
+                        HttpStatusCode.BadRequest
+                    )
 
-            service.createGroup(
-                name = request.name,
-                creatorLogin = request.creatorLogin
+            val group =
+                service.getGroupById(groupId)
+                    ?: return@get call.respond(
+                        HttpStatusCode.NotFound
+                    )
+
+            call.respond(
+                group.toResponse()
             )
-
-            call.respond(HttpStatusCode.Created)
         }
 
+        post {
 
-        get("/getGroups/{userId}") {
+            val request =
+                call.receive<CreateGroupRequest>()
 
-            val userId = call.parameters["userId"]?.toIntOrNull()
-                ?: return@get call.respond(HttpStatusCode.BadRequest)
+            val group =
+                service.createGroup(
+                    name = request.name,
+                    creatorLogin = request.creatorLogin
+                )
 
-            val groups = service.getGroupsByUserId(userId)
-
-            call.respond(groups)
+            call.respond(
+                HttpStatusCode.Created,
+                group.toResponse()
+            )
         }
 
-        get("/{id}") {
+        post("/{groupId}/members") {
 
-            val id = call.parameters["id"]?.toIntOrNull()
-                ?: return@get call.respond(HttpStatusCode.BadRequest)
+            val groupId =
+                call.parameters["groupId"]
+                    ?.toIntOrNull()
+                    ?: return@post call.respond(
+                        HttpStatusCode.BadRequest
+                    )
 
-            val group = service.getGroupById(id)
-                ?: return@get call.respond(HttpStatusCode.NotFound)
+            val request =
+                call.receive<AddUserToGroupRequest>()
 
-            call.respond(group)
-        }
-
-        post("/{groupId}/add-user/{userLogin}") {
-
-            val groupId = call.parameters["groupId"]?.toIntOrNull()
-                ?: return@post call.respond(HttpStatusCode.BadRequest)
-
-            val userLogin = call.parameters["userLogin"]
-                ?: return@post call.respond(HttpStatusCode.BadRequest)
-
-            val success = service.addUserToGroup(userLogin, groupId)
+            val success =
+                service.addUserToGroup(
+                    request.login,
+                    groupId
+                )
 
             if (!success) {
-                return@post call.respond(HttpStatusCode.BadRequest)
+                return@post call.respond(
+                    HttpStatusCode.BadRequest,
+                    "User or group not found"
+                )
             }
 
             call.respond(HttpStatusCode.OK)
         }
 
-        delete("/{groupId}/remove-user/{userId}") {
+        delete("/{groupId}/members/{userId}") {
 
-            val groupId = call.parameters["groupId"]?.toIntOrNull()
-                ?: return@delete call.respond(HttpStatusCode.BadRequest)
+            val groupId =
+                call.parameters["groupId"]
+                    ?.toIntOrNull()
+                    ?: return@delete call.respond(
+                        HttpStatusCode.BadRequest
+                    )
 
-            val userId = call.parameters["userId"]?.toIntOrNull()
-                ?: return@delete call.respond(HttpStatusCode.BadRequest)
+            val userId =
+                call.parameters["userId"]
+                    ?.toIntOrNull()
+                    ?: return@delete call.respond(
+                        HttpStatusCode.BadRequest
+                    )
 
-            val success = service.removeUserFromGroup(userId, groupId)
+            val success =
+                service.removeUserFromGroup(
+                    userId,
+                    groupId
+                )
 
             if (!success) {
-                return@delete call.respond(HttpStatusCode.BadRequest)
+                return@delete call.respond(
+                    HttpStatusCode.BadRequest,
+                    "Cannot remove user"
+                )
             }
 
             call.respond(HttpStatusCode.OK)

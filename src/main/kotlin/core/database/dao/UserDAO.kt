@@ -19,7 +19,7 @@ class UserDAO(id: EntityID<Int>) : IntEntity(id) {
     var login by UserTable.login
     var passwordHash by UserTable.passwordHash
 
-    val habits by HabitDAO referrersOn HabitTable.user
+    val habits by HabitDAO optionalReferrersOn HabitTable.ownerUser
     var groups by GroupDAO via UserGroupTable
 }
 

@@ -6,5 +6,4 @@ import kotlinx.serialization.Serializable
 data class Habit(
     val id: Int,
     val habitName: String,
-    val streak: Long
 )

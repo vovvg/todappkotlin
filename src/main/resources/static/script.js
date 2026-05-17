@@ -1,157 +1,417 @@
-
 let currentUser = null
+let openedGroup = null
 
-document.addEventListener('DOMContentLoaded', function() {
-    const savedUser = localStorage.getItem('currentUser')
-    if (savedUser) {
+document.addEventListener('DOMContentLoaded', () => {
+
+    const savedUser =
+        localStorage.getItem('currentUser')
+
+    if(savedUser){
+
         currentUser = JSON.parse(savedUser)
+
         showDashboard()
-        loadHabits()
+        loadAll()
     }
 })
+
+/* ---------- HELPERS ---------- */
+
+function api(url, options = {}) {
+
+    return fetch(url, options)
+        .then(async r => {
+
+            if(!r.ok){
+
+                const text = await r.text()
+                throw new Error(text || "Request failed")
+            }
+
+            if(r.status === 204){
+                return null
+            }
+
+            return r.json()
+        })
+}
+
+function loadAll(){
+    loadHabits()
+    loadGroups()
+}
 
 /* ---------- LOGIN ---------- */
 
 function login(){
 
-    const login=document.getElementById("loginLogin").value
-    const password=document.getElementById("loginPassword").value
+    const login =
+        document.getElementById("loginLogin").value
 
-    fetch("/user/login",{
+    const password =
+        document.getElementById("loginPassword").value
+
+    api("/user/login",{
         method:"POST",
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({login,password})
     })
-        .then(r=>r.json())
         .then(user=>{
+
             currentUser=user
-            // Сохраняем пользователя в localStorage
-            localStorage.setItem('currentUser', JSON.stringify(user))
+
+            localStorage.setItem(
+                "currentUser",
+                JSON.stringify(user)
+            )
+
             showDashboard()
-            loadHabits()
+            loadAll()
         })
+        .catch(e=>alert(e.message))
 }
 
 /* ---------- REGISTER ---------- */
 
 function register(){
 
-    const username=document.getElementById("regName").value
-    const login=document.getElementById("regLogin").value
-    const password=document.getElementById("regPassword").value
+    const username =
+        document.getElementById("regName").value
 
-    fetch("/user/register",{
+    const login =
+        document.getElementById("regLogin").value
+
+    const password =
+        document.getElementById("regPassword").value
+
+    api("/user/register",{
         method:"POST",
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({username,login,password})
-    }).then(()=>showLogin())
+        body:JSON.stringify({
+            username,
+            login,
+            password
+        })
+    })
+        .then(()=>{
+            alert("Registered successfully")
+            showLogin()
+        })
+        .catch(e=>alert(e.message))
 }
 
 /* ---------- HABITS ---------- */
 
 function loadHabits(){
 
-    fetch(`/habits/${currentUser.login}`)
-        .then(r=>r.json())
+    api(`/users/${currentUser.login}/habits`)
         .then(displayHabits)
 }
 
 function displayHabits(habits){
 
-    const list=document.getElementById("habitList")
-    const emptyState = document.getElementById("emptyState")
-    
-    list.innerHTML=""
-    
-    if (habits && habits.length > 0) {
-        emptyState.style.display = "none"
-        
-        habits.forEach(h=>{
-            const div=document.createElement("div")
-            div.className="habit"
+    const list =
+        document.getElementById("habitList")
 
-            const habitText = document.createElement("span")
-            habitText.innerText = `${h.habitName} (streak ${h.streak})`
-            div.appendChild(habitText)
+    const empty =
+        document.getElementById("emptyState")
 
-            const deleteButton = document.createElement("span")
-            deleteButton.className = "delete-button"
-            deleteButton.innerText = "❌"
-            deleteButton.onclick = function() { deleteHabitById(h.id) }
-            div.appendChild(deleteButton)
-            
-            list.appendChild(div)
-        })
-    } else {
-        emptyState.style.display = "block"
+    list.innerHTML = ""
+
+    if(!habits || habits.length === 0){
+        empty.style.display="block"
+        return
     }
-}
 
-function deleteHabitById(habitId){
-    fetch("/habits/delete",{
-        method:"DELETE",
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-            habitId: habitId,
-            login: currentUser.login
-        })
+    empty.style.display="none"
+
+    habits.forEach(h=>{
+
+        const div =
+            document.createElement("div")
+
+        div.className="habit"
+
+        div.innerHTML = `
+            <span>${h.habitName}</span>
+            <button onclick="deleteHabit(${h.id})">
+                Delete
+            </button>
+        `
+
+        list.appendChild(div)
     })
-    .then(loadHabits)
 }
 
 function addHabit(){
 
-    const name=document.getElementById("habitName").value
+    const habitName =
+        document.getElementById("habitName").value
 
-    fetch("/habits/add",{
+    if(!habitName){
+        return
+    }
+
+    api(`/users/${currentUser.login}/habits`,{
+        method:"POST",
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({habitName})
+    })
+        .then(()=>{
+
+            document.getElementById(
+                "habitName"
+            ).value=""
+
+            loadHabits()
+        })
+        .catch(e=>alert(e.message))
+}
+
+function deleteHabit(habitId){
+
+    api(`/habits/${habitId}`,{
+        method:"DELETE"
+    })
+        .then(loadHabits)
+        .catch(e=>alert(e.message))
+}
+
+/* ---------- GROUPS ---------- */
+
+function loadGroups(){
+
+    api(`/users/${currentUser.login}/groups`)
+        .then(displayGroups)
+}
+
+function displayGroups(groups){
+
+    const list =
+        document.getElementById(
+            "groupList"
+        )
+
+    list.innerHTML=""
+
+    groups.forEach(group=>{
+
+        const div =
+            document.createElement("div")
+
+        div.className="group"
+
+        div.innerHTML=`
+
+            <strong>${group.name}</strong>
+
+            <span>
+                ${group.members.length}
+                members
+            </span>
+
+            <button
+                onclick="openGroup(${group.id})">
+                Open
+            </button>
+        `
+
+        list.appendChild(div)
+    })
+}
+
+function addGroupHabit(groupId){
+
+    const input =
+        document.getElementById(
+            `groupHabit-${groupId}`
+        )
+
+    const habitName = input.value
+
+    if(!habitName){
+        return
+    }
+
+    api(`/groups/${groupId}/habits`,{
+        method:"POST",
+        headers:{
+            'Content-Type':'application/json'
+        },
+        body:JSON.stringify({
+            habitName
+        })
+    })
+        .then(()=>{
+            input.value=""
+            loadGroups()
+        })
+        .catch(e=>alert(e.message))
+}
+
+function createGroup(){
+
+    const name =
+        document.getElementById("groupName").value
+
+    if(!name){
+        return
+    }
+
+    api("/groups",{
         method:"POST",
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
-            habitName:name,
-            login:currentUser.login
+            name,
+            creatorLogin:currentUser.login
         })
     })
-        .then(loadHabits)
+        .then(()=>{
+
+            document.getElementById(
+                "groupName"
+            ).value=""
+
+            loadGroups()
+        })
+        .catch(e=>alert(e.message))
 }
 
-function deleteHabit(){
-    const habitId = document.getElementById("habitIdToDelete").value
+function addUserToGroup(groupId){
 
-    fetch("/habits/delete",{
-        method:"DELETE",
+    const input =
+        document.getElementById(
+            `addUser-${groupId}`
+        )
+
+    const login = input.value
+
+    if(!login){
+        return
+    }
+
+    api(`/groups/${groupId}/members`,{
+        method:"POST",
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-            habitId: parseInt(habitId),
-            login: currentUser.login
-        })
+        body:JSON.stringify({login})
     })
-    .then(loadHabits)
+        .then(()=>{
+            input.value=""
+            loadGroups()
+        })
+        .catch(e=>alert(e.message))
+}
+function openGroup(groupId){
+
+    fetch(`/groups/${groupId}`)
+        .then(r=>r.json())
+        .then(group=>{
+
+            openedGroup = group
+
+            dashboard.classList.add("hidden")
+            groupDetails.classList.remove("hidden")
+
+            renderGroup(group)
+        })
+}
+function renderGroup(group){
+
+    document.getElementById(
+        "groupTitle"
+    ).innerText = group.name
+
+    const members =
+        document.getElementById(
+            "groupMembers"
+        )
+
+    const habits =
+        document.getElementById(
+            "groupHabits"
+        )
+
+    members.innerHTML=""
+    habits.innerHTML=""
+
+    group.members.forEach(m=>{
+
+        const div =
+            document.createElement("div")
+
+        div.className="member"
+
+        div.innerText =
+            `${m.username} (${m.login})`
+
+        members.appendChild(div)
+    })
+
+    group.habits.forEach(h=>{
+
+        const div =
+            document.createElement("div")
+
+        div.className="habit"
+
+        div.innerText =
+            h.habitName
+
+        habits.appendChild(div)
+    })
 }
 
-/* ---------- VIEW SWITCH ---------- */
+function backToDashboard(){
+
+    groupDetails.classList.add("hidden")
+    dashboard.classList.remove("hidden")
+
+    loadGroups()
+}
+
+/* ---------- VIEW ---------- */
 
 function showLogin(){
+
     loginBlock.classList.remove("hidden")
     registerBlock.classList.add("hidden")
     dashboard.classList.add("hidden")
 }
 
 function showRegister(){
+
     loginBlock.classList.add("hidden")
     registerBlock.classList.remove("hidden")
+    dashboard.classList.add("hidden")
 }
 
 function showDashboard(){
+
     loginBlock.classList.add("hidden")
     registerBlock.classList.add("hidden")
     dashboard.classList.remove("hidden")
+
+    document.getElementById(
+        "welcomeTitle"
+    ).innerText =
+        `Welcome, ${currentUser.username}`
 }
 
 function logout(){
+
     currentUser = null
-    localStorage.removeItem('currentUser')
-    
+
+    localStorage.removeItem(
+        "currentUser"
+    )
+
     showLogin()
-    
-    document.getElementById('habitList').innerHTML = ''
+
+    document.getElementById(
+        "habitList"
+    ).innerHTML=""
+
+    document.getElementById(
+        "groupList"
+    ).innerHTML=""
 }

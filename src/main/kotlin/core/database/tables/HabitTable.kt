@@ -6,11 +6,14 @@ import org.jetbrains.exposed.sql.ReferenceOption
 object HabitTable : IntIdTable("habits") {
 
     val habitName = varchar("habit_name", 100)
-    val streak = long("streak")
 
-    val user = reference(
-        "user_id",
-        UserTable,
-        onDelete = ReferenceOption.CASCADE
-    )
+    val ownerUser = reference(
+        "owner_user_id",
+        UserTable
+    ).nullable()
+
+    val ownerGroup = reference(
+        "owner_group_id",
+        GroupTable
+    ).nullable()
 }
