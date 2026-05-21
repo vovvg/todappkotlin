@@ -25,6 +25,6 @@ fun Application.configureRouting(userService: UserService, habitsService: Habits
 
         userRoutes(userService)
         habitRoutes(habitsService)
-        groupRoutes(groupService)
+        groupRoutes(groupService, habitsService)
     }
 }

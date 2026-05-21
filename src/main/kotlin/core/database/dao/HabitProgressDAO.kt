@@ -12,4 +12,5 @@ class HabitProgressDAO(id: EntityID<Int>) : IntEntity(id) {
     var habit by HabitDAO referencedOn HabitProgressTable.habit
     var user by UserDAO referencedOn HabitProgressTable.user
     var streak by HabitProgressTable.streak
+    var lastCheckinDay by HabitProgressTable.lastCheckinDay
 }

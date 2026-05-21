@@ -1,13 +1,15 @@
 package com.application.features.groups.presentation
 
 import com.application.features.groups.domain.GroupService
+import com.application.features.habits.domain.HabitsService
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Route.groupRoutes(
-    service: GroupService
+    service: GroupService,
+    habitsService: HabitsService,
 ) {
 
     route("/users") {
@@ -40,14 +42,27 @@ fun Route.groupRoutes(
                         HttpStatusCode.BadRequest
                     )
 
+            val viewerLogin =
+                call.request.queryParameters["userLogin"]
+
             val group =
                 service.getGroupById(groupId)
                     ?: return@get call.respond(
                         HttpStatusCode.NotFound
                     )
 
+            // If we know who's viewing, replace the habits list with one
+            // that has streaks populated for that viewer.
+            val habitsWithStreaks = viewerLogin?.let {
+                habitsService.getGroupHabits(groupId, it)
+            }
+
             call.respond(
-                group.toResponse()
+                if (habitsWithStreaks != null) {
+                    group.toResponse(habitsWithStreaks)
+                } else {
+                    group.toResponse()
+                }
             )
         }
 

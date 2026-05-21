@@ -52,8 +52,23 @@ fun Route.habitRoutes(
                 login,
                 request.habitName
             )
+                ?: return@post call.respond(HttpStatusCode.NotFound)
 
-            call.respond(HttpStatusCode.Created, habit?: Unit)
+            call.respond(HttpStatusCode.Created, habit)
+        }
+
+        post("/{login}/habits/{habitId}/checkin") {
+
+            val login = call.parameters["login"]
+                ?: return@post call.respond(HttpStatusCode.BadRequest)
+
+            val habitId = call.parameters["habitId"]?.toIntOrNull()
+                ?: return@post call.respond(HttpStatusCode.BadRequest)
+
+            val streak = habitService.checkin(login, habitId)
+                ?: return@post call.respond(HttpStatusCode.NotFound)
+
+            call.respond(CheckinResponse(habitId, streak))
         }
     }
 
@@ -65,8 +80,10 @@ fun Route.habitRoutes(
                 call.parameters["groupId"]?.toIntOrNull()
                     ?: return@get call.respond(HttpStatusCode.BadRequest)
 
+            val viewerLogin = call.request.queryParameters["userLogin"]
+
             call.respond(
-                habitService.getGroupHabits(groupId)
+                habitService.getGroupHabits(groupId, viewerLogin)
             )
         }
 

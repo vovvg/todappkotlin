@@ -1,6 +1,5 @@
 package com.application.features.habits.domain
 
-import com.application.features.groups.data.GroupRepository
 import com.application.features.habits.data.HabitsRepository
 import com.application.features.user.data.UserRepository
 
@@ -14,8 +13,14 @@ class HabitsService(
         return habitRepo.getUserHabits(user.id)
     }
 
-    suspend fun getGroupHabits(groupId: Int) =
-        habitRepo.getGroupHabits(groupId)
+    suspend fun getGroupHabits(
+        groupId: Int,
+        viewerLogin: String? = null,
+    ): List<Habit> {
+        val viewerId = viewerLogin
+            ?.let { userRepo.getByLogin(it)?.id }
+        return habitRepo.getGroupHabits(groupId, viewerId)
+    }
 
     suspend fun createUserHabit(
         login: String,
@@ -33,4 +38,13 @@ class HabitsService(
 
     suspend fun deleteHabit(habitId: Int) =
         habitRepo.deleteHabit(habitId)
+
+    /**
+     * Records a check-in for the given user on the given habit and returns
+     * the new streak. Returns null if the user or habit doesn't exist.
+     */
+    suspend fun checkin(login: String, habitId: Int): Long? {
+        val user = userRepo.getByLogin(login) ?: return null
+        return habitRepo.checkin(user.id, habitId)
+    }
 }

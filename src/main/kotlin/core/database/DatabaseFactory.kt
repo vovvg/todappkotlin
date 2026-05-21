@@ -1,6 +1,7 @@
 package com.application.core.database
 
 import com.application.core.database.tables.GroupTable
+import com.application.core.database.tables.HabitProgressTable
 import com.application.core.database.tables.HabitTable
 import com.application.core.database.tables.UserGroupTable
 import com.application.core.database.tables.UserTable
@@ -29,7 +30,27 @@ object DatabaseFactory {
         Database.Companion.connect(dataSource)
 
         transaction {
-            SchemaUtils.create(UserTable, HabitTable, GroupTable, UserGroupTable)
+            SchemaUtils.create(
+                UserTable,
+                HabitTable,
+                GroupTable,
+                UserGroupTable,
+                HabitProgressTable,
+            )
+
+            // --- lightweight, idempotent migrations ---
+            //
+            // Earlier versions of the schema put `streak` on the `habits`
+            // table as NOT NULL. Streak now lives on `habit_progress`
+            // (per-user), so drop the legacy column if it survived from
+            // an older deploy. CREATE TABLE IF NOT EXISTS won't touch
+            // pre-existing columns, hence the explicit ALTER.
+            exec("ALTER TABLE habits DROP COLUMN IF EXISTS streak")
+
+            // Track the day of the last check-in so we can enforce a
+            // once-per-day cadence and detect broken streaks. Stored
+            // as epoch-day (BIGINT) to avoid adding a date dependency.
+            exec("ALTER TABLE habit_progress ADD COLUMN IF NOT EXISTS last_checkin_day BIGINT")
         }
     }
 }

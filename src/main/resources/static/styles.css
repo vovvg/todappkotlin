@@ -1,5 +1,8 @@
 body{
-    font-family:Arial;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
     background:#f3f5f9;
     margin: 0;
     padding: 0;
@@ -18,9 +21,11 @@ body{
 
 h2{
     text-align:center;
-    color: #2d3748;
+    color: #1a202c;
     margin-bottom: 20px;
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 1.35rem;
+    letter-spacing: -0.02em;
 }
 
 .dashboard-header {
@@ -48,17 +53,32 @@ h2{
 h3{
     margin: 15px 0 10px 0;
     color: #4a5568;
-    font-weight: 500;
-    font-size: 1rem;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
 }
 
 input{
     width:100%;
-    padding:8px;
+    padding:8px 10px;
     margin:6px 0;
     border:1px solid #ddd;
-    border-radius:4px;
+    border-radius:6px;
     box-sizing: border-box;
+    font-family: inherit;
+    font-size: 14px;
+    color: #2d3748;
+}
+
+input::placeholder {
+    color: #a0aec0;
+}
+
+input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
 }
 
 .input-group {
@@ -85,8 +105,11 @@ button{
     background:#3b82f6;
     color:white;
     border:none;
-    border-radius:4px;
+    border-radius:6px;
     cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
     transition: background 0.2s;
 }
 
@@ -205,4 +228,158 @@ button:hover{
 .group span:last-child:hover {
     opacity: 1;
     transform: scale(1.1);
+}
+
+/* HABIT ROW EXTRAS */
+
+.habit .habit-name {
+    flex-grow: 1;
+    font-weight: 500;
+    color: #2d3748;
+}
+
+.habit .streak {
+    background: #fff5e6;
+    border: 1px solid #ffd8a8;
+    color: #b25b00;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.habit .check-button,
+.habit .danger {
+    width: auto;
+    margin: 0 0 0 6px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+}
+
+.habit .check-button {
+    background: #16a34a;
+}
+
+.habit .check-button:hover {
+    background: #15803d;
+}
+
+.habit .danger,
+button.danger {
+    background: #e53e3e;
+}
+
+.habit .danger:hover,
+button.danger:hover {
+    background: #c53030;
+}
+
+button.small {
+    width: auto;
+    padding: 4px 10px;
+    font-size: 12px;
+    margin: 0 0 0 6px;
+}
+
+.member {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f6f7fb;
+    padding: 8px 12px;
+    margin: 4px 0;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+}
+
+.empty-state-inline {
+    text-align: center;
+    color: #718096;
+    font-style: italic;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border: 1px dashed #cbd5e0;
+}
+
+/* GROUP HABIT WITH MEMBER STREAKS */
+
+.group-habit {
+    margin: 8px 0 14px 0;
+}
+
+.group-habit .habit {
+    margin-bottom: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.member-streaks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 8px 12px;
+    background: #fafbfd;
+    border: 1px solid #e0e0e0;
+    border-top: none;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+.member-streak {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 9px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #4a5568;
+    letter-spacing: 0.01em;
+}
+
+.member-streak.checked-in {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+    color: #166534;
+}
+
+.member-streak.is-me {
+    box-shadow: 0 0 0 1px #3b82f6 inset;
+    font-weight: 600;
+}
+
+.member-streak-name {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.member-streak-value {
+    white-space: nowrap;
+}
+
+.member-streak-status {
+    opacity: 0.7;
+}
+
+.member-streak.checked-in .member-streak-status {
+    opacity: 1;
+    font-weight: 700;
+}
+
+button.check-button.done {
+    background: #cbd5e0;
+    color: #4a5568;
+    cursor: not-allowed;
+}
+
+button.check-button.done:hover {
+    background: #cbd5e0;
 }
