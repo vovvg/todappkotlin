@@ -6,6 +6,16 @@ body{
     background:#f3f5f9;
     margin: 0;
     padding: 0;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+body.tg-mode {
+    background: var(--tg-theme-bg-color, #f3f5f9);
+}
+
+/* В TG-режиме нативный BackButton заменяет HTML-кнопку "← Back" */
+body.tg-mode #groupDetails > button:first-child {
+    display: none;
 }
 
 .container{

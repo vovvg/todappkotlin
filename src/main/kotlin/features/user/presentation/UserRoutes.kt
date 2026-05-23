@@ -8,7 +8,7 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 
-fun Route.userRoutes(service: UserService) {
+fun Route.userRoutes(service: UserService, botToken: String) {
     route("/user") {
         post("/login") {
             val req = call.receive<LoginRequest>()
@@ -27,5 +27,14 @@ fun Route.userRoutes(service: UserService) {
 
             call.respond(LoginResponse(user.username, user.login))
         }
+    }
+
+    post("/auth/telegram") {
+        val req = call.receive<TelegramAuthRequest>()
+
+        val user = service.loginOrRegisterWithTelegram(req.initData, botToken)
+            ?: return@post call.respond(HttpStatusCode.Unauthorized)
+
+        call.respond(LoginResponse(user.username, user.login))
     }
 }

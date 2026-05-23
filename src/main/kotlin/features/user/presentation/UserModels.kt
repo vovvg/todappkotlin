@@ -20,3 +20,8 @@ data class LoginResponse(
     val username: String,
     val login: String
 )
+
+@Serializable
+data class TelegramAuthRequest(
+    val initData: String
+)

@@ -18,11 +18,19 @@ class UserRepository {
             .firstOrNull()
     }
 
+    suspend fun getByTelegramId(telegramId: Long): User? = suspendTransaction {
+        UserDAO.find { UserTable.telegramId eq telegramId }
+            .limit(1)
+            .map { it.toModel() }
+            .firstOrNull()
+    }
+
     suspend fun create(user: User) = suspendTransaction {
         val dao = UserDAO.new {
             username = user.username
             login = user.login
             passwordHash = user.passwordHash
+            telegramId = user.telegramId
         }
         dao.toModel()
     }

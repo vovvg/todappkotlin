@@ -1,15 +1,35 @@
 let currentUser = null
 let openedGroup = null
 
+const tg = window.Telegram?.WebApp
+
 document.addEventListener('DOMContentLoaded', () => {
 
-    const savedUser =
-        localStorage.getItem('currentUser')
+    if (tg) {
+        tg.ready()
+        tg.expand()
+        document.body.classList.add('tg-mode')
+    }
 
+    if (tg?.initData) {
+        api('/auth/telegram', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ initData: tg.initData })
+        })
+            .then(user => {
+                currentUser = user
+                localStorage.setItem('currentUser', JSON.stringify(user))
+                showDashboard()
+                loadAll()
+            })
+            .catch(e => alert('Telegram auth failed: ' + e.message))
+        return
+    }
+
+    const savedUser = localStorage.getItem('currentUser')
     if (savedUser) {
-
         currentUser = JSON.parse(savedUser)
-
         showDashboard()
         loadAll()
     }
@@ -269,7 +289,6 @@ function createGroup() {
 
 function openGroup(groupId) {
 
-    // Pass userLogin so the response carries this user's streak per habit.
     api(`/groups/${groupId}?userLogin=${encodeURIComponent(currentUser.login)}`)
         .then(group => {
 
@@ -279,6 +298,11 @@ function openGroup(groupId) {
             document.getElementById("groupDetails").classList.remove("hidden")
 
             renderGroup(group)
+
+            if (tg?.BackButton) {
+                tg.BackButton.show()
+                tg.BackButton.onClick(backToDashboard)
+            }
         })
         .catch(e => alert(e.message))
 }
@@ -454,6 +478,11 @@ function backToDashboard() {
     document.getElementById("groupDetails").classList.add("hidden")
     document.getElementById("dashboard").classList.remove("hidden")
 
+    if (tg?.BackButton) {
+        tg.BackButton.hide()
+        tg.BackButton.offClick(backToDashboard)
+    }
+
     openedGroup = null
     loadGroups()
 }
@@ -485,6 +514,10 @@ function showDashboard() {
 
     document.getElementById("welcomeTitle").innerText =
         `Welcome, ${currentUser.username}`
+
+    if (tg?.initData) {
+        document.getElementById("logoutButton").classList.add("hidden")
+    }
 }
 
 function logout() {

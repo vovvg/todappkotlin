@@ -11,15 +11,18 @@ import io.ktor.server.config.ApplicationConfig
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.net.URI
 
 object DatabaseFactory {
 
     fun init(config: ApplicationConfig) {
+        val (jdbcUrl, user, password) = resolveDatabaseConfig(config)
+
         val hikariConfig = HikariConfig().apply {
-            jdbcUrl = config.property("ktor.database.url").getString()
-            driverClassName = config.property("ktor.database.driver").getString()
-            username = config.property("ktor.database.user").getString()
-            password = config.property("ktor.database.password").getString()
+            this.jdbcUrl = jdbcUrl
+            driverClassName = "org.postgresql.Driver"
+            username = user
+            this.password = password
 
             maximumPoolSize = 10
             isAutoCommit = false
@@ -46,11 +49,25 @@ object DatabaseFactory {
             // an older deploy. CREATE TABLE IF NOT EXISTS won't touch
             // pre-existing columns, hence the explicit ALTER.
             exec("ALTER TABLE habits DROP COLUMN IF EXISTS streak")
-
-            // Track the day of the last check-in so we can enforce a
-            // once-per-day cadence and detect broken streaks. Stored
-            // as epoch-day (BIGINT) to avoid adding a date dependency.
             exec("ALTER TABLE habit_progress ADD COLUMN IF NOT EXISTS last_checkin_day BIGINT")
+            exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS telegram_id BIGINT UNIQUE")
         }
+    }
+
+    // Railway provides DATABASE_URL as postgresql://user:pass@host:port/db.
+    // Fall back to individual config properties for local development.
+    private fun resolveDatabaseConfig(config: ApplicationConfig): Triple<String, String, String> {
+        val rawUrl = System.getenv("DATABASE_URL")
+        if (rawUrl != null) {
+            val uri = URI(rawUrl)
+            val (user, pass) = (uri.userInfo ?: ":").split(":", limit = 2)
+            val jdbcUrl = "jdbc:postgresql://${uri.host}:${uri.port}${uri.path}"
+            return Triple(jdbcUrl, user, pass)
+        }
+        return Triple(
+            config.property("ktor.database.url").getString(),
+            config.property("ktor.database.user").getString(),
+            config.property("ktor.database.password").getString(),
+        )
     }
 }

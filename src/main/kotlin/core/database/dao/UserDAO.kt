@@ -18,6 +18,7 @@ class UserDAO(id: EntityID<Int>) : IntEntity(id) {
     var username by UserTable.username
     var login by UserTable.login
     var passwordHash by UserTable.passwordHash
+    var telegramId by UserTable.telegramId
 
     val habits by HabitDAO optionalReferrersOn HabitTable.ownerUser
     var groups by GroupDAO via UserGroupTable
@@ -28,6 +29,7 @@ fun UserDAO.toModel() = User(
     username = this.username,
     login = this.login,
     passwordHash = this.passwordHash,
+    telegramId = this.telegramId,
     habits = this.habits.map { it.toModel() }
 )
 
