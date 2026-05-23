@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: todapp
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: TG_BOT_TOKEN
+        sync: false           # вводите вручную в дашборде
+      - key: DATABASE_URL
+        fromDatabase:
+          name: todapp-db
+          property: connectionString
+
+databases:
+  - name: todapp-db
+    plan: free
+    databaseName: todapp
+    user: todapp
