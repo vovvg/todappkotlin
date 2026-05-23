@@ -537,9 +537,15 @@ function showUserSearchResults(users) {
         item.className = "search-result-item"
         const initials = u.username.trim().split(" ")
             .map(w => w[0]).slice(0, 2).join("").toUpperCase()
+        const tgHandle = u.telegramUsername
+            ? `<span class="result-handle">@${escapeHtml(u.telegramUsername)}</span>`
+            : ""
         item.innerHTML = `
             <div class="result-avatar">${escapeHtml(initials)}</div>
-            <span class="result-name">${escapeHtml(u.username)}</span>
+            <div class="result-info">
+                <span class="result-name">${escapeHtml(u.username)}</span>
+                ${tgHandle}
+            </div>
         `
         item.onclick = () => {
             hideUserSearch()

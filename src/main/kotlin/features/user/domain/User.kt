@@ -10,5 +10,6 @@ data class User(
     val login: String,
     val passwordHash: String,
     val telegramId: Long? = null,
+    val telegramUsername: String? = null,
     val habits: List<Habit>
 )

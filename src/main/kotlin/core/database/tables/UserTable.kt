@@ -7,4 +7,5 @@ object UserTable : IntIdTable("users") {
     val login = varchar("login", 50)
     val passwordHash = varchar("password_hash", 100)
     val telegramId = long("telegram_id").nullable().uniqueIndex()
+    val telegramUsername = varchar("telegram_username", 50).nullable()
 }

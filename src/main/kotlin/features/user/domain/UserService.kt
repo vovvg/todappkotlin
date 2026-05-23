@@ -48,7 +48,10 @@ class UserService(
 
     suspend fun searchUsers(query: String): List<User> {
         if (query.length < 2) return emptyList()
-        return userRepository.searchByUsername(query)
+        // Strip leading '@' so users can type "@johndoe" or "johndoe"
+        val normalised = query.trimStart('@')
+        if (normalised.isEmpty()) return emptyList()
+        return userRepository.searchByUsername(normalised)
     }
 
     suspend fun loginOrRegisterWithTelegram(initData: String, botToken: String): User? {
@@ -63,6 +66,7 @@ class UserService(
                 login = login,
                 passwordHash = "",
                 telegramId = tgUser.id,
+                telegramUsername = tgUser.username,
                 habits = emptyList()
             )
         )
@@ -119,6 +123,7 @@ class UserService(
                 login = "tg_${req.id}",
                 passwordHash = "",
                 telegramId = req.id,
+                telegramUsername = req.username,
                 habits = emptyList(),
             )
         )

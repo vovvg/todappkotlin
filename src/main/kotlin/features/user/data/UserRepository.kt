@@ -6,6 +6,7 @@ import com.application.core.database.dao.toModel
 import com.application.core.database.tables.UserTable
 import com.application.features.user.domain.User
 import org.jetbrains.exposed.sql.lowerCase
+import org.jetbrains.exposed.sql.or
 
 class UserRepository {
     suspend fun allUser(): List<User> = suspendTransaction {
@@ -32,13 +33,16 @@ class UserRepository {
             login = user.login
             passwordHash = user.passwordHash
             telegramId = user.telegramId
+            telegramUsername = user.telegramUsername
         }
         dao.toModel()
     }
 
     suspend fun searchByUsername(query: String): List<User> = suspendTransaction {
+        val q = "%${query.lowercase()}%"
         UserDAO.find {
-            UserTable.username.lowerCase() like "%${query.lowercase()}%"
+            (UserTable.username.lowerCase() like q) or
+            (UserTable.telegramUsername.lowerCase() like q)
         }
             .limit(8)
             .map { it.toModel() }

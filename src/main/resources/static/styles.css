@@ -212,8 +212,19 @@ button:hover{
     flex-shrink: 0;
 }
 
+.search-result-item .result-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
 .search-result-item .result-name {
     font-weight: 500;
+}
+
+.search-result-item .result-handle {
+    font-size: 12px;
+    color: #718096;
 }
 
 .link a {

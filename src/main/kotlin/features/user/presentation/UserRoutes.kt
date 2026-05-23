@@ -18,7 +18,7 @@ fun Route.userRoutes(service: UserService, botToken: String, botUsername: String
     get("/user/search") {
         val query = call.request.queryParameters["query"]?.trim() ?: ""
         val users = service.searchUsers(query)
-        call.respond(users.map { UserSearchResponse(it.login, it.username) })
+        call.respond(users.map { UserSearchResponse(it.login, it.username, it.telegramUsername) })
     }
     route("/user") {
         post("/login") {

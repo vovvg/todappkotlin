@@ -48,4 +48,5 @@ data class BotConfigResponse(
 data class UserSearchResponse(
     val login: String,
     val username: String,
+    val telegramUsername: String? = null,
 )
