@@ -14,7 +14,8 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Application.configureRouting(userService: UserService, habitsService: HabitsService, groupService: GroupService) {
-    val botToken = environment.config.property("telegram.botToken").getString()
+    val botToken    = environment.config.property("telegram.botToken").getString()
+    val botUsername = environment.config.propertyOrNull("telegram.botUsername")?.getString() ?: ""
 
     install(StatusPages) {
         exception<Throwable> { call, cause ->
@@ -25,7 +26,7 @@ fun Application.configureRouting(userService: UserService, habitsService: Habits
     routing {
         staticResources("/", "static")
 
-        userRoutes(userService, botToken)
+        userRoutes(userService, botToken, botUsername)
         habitRoutes(habitsService)
         groupRoutes(groupService, habitsService)
     }

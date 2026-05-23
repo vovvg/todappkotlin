@@ -5,10 +5,16 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 
-fun Route.userRoutes(service: UserService, botToken: String) {
+fun Route.userRoutes(service: UserService, botToken: String, botUsername: String) {
+
+    // Public config for the frontend (bot username for the Login Widget)
+    get("/config") {
+        call.respond(BotConfigResponse(botUsername))
+    }
     route("/user") {
         post("/login") {
             val req = call.receive<LoginRequest>()
@@ -33,6 +39,15 @@ fun Route.userRoutes(service: UserService, botToken: String) {
         val req = call.receive<TelegramAuthRequest>()
 
         val user = service.loginOrRegisterWithTelegram(req.initData, botToken)
+            ?: return@post call.respond(HttpStatusCode.Unauthorized)
+
+        call.respond(LoginResponse(user.username, user.login))
+    }
+
+    post("/auth/telegram/widget") {
+        val req = call.receive<TelegramWidgetAuthRequest>()
+
+        val user = service.loginOrRegisterWithTelegramWidget(req, botToken)
             ?: return@post call.respond(HttpStatusCode.Unauthorized)
 
         call.respond(LoginResponse(user.username, user.login))

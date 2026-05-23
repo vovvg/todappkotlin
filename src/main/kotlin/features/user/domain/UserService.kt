@@ -8,8 +8,10 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 import kotlinx.serialization.json.contentOrNull
+import com.application.features.user.presentation.TelegramWidgetAuthRequest
 import org.slf4j.LoggerFactory
 import java.net.URLDecoder
+import java.security.MessageDigest
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
@@ -57,6 +59,62 @@ class UserService(
                 passwordHash = "",
                 telegramId = tgUser.id,
                 habits = emptyList()
+            )
+        )
+    }
+
+    // ── Telegram Login Widget (website button) ─────────────────────────────
+    // Validation differs from Mini App: secret = SHA-256(botToken), not HMAC.
+
+    suspend fun loginOrRegisterWithTelegramWidget(
+        req: TelegramWidgetAuthRequest,
+        botToken: String,
+    ): User? {
+        if (botToken.isBlank()) {
+            log.error("TG widget auth failed: TG_BOT_TOKEN is not set")
+            return null
+        }
+
+        val fields = buildMap {
+            put("auth_date", req.authDate.toString())
+            put("first_name", req.firstName)
+            put("id", req.id.toString())
+            req.lastName?.let  { put("last_name", it) }
+            req.photoUrl?.let  { put("photo_url", it) }
+            req.username?.let  { put("username", it) }
+        }
+
+        val dataCheckString = fields.entries
+            .sortedBy { it.key }
+            .joinToString("\n") { "${it.key}=${it.value}" }
+
+        val secretKey = MessageDigest.getInstance("SHA-256")
+            .digest(botToken.toByteArray(Charsets.UTF_8))
+
+        val computedHash = hmacSha256(dataCheckString.toByteArray(Charsets.UTF_8), secretKey)
+        val computedHashHex = computedHash.joinToString("") { "%02x".format(it) }
+
+        if (!computedHashHex.equals(req.hash, ignoreCase = true)) {
+            log.error("TG widget auth failed: HMAC mismatch (check TG_BOT_TOKEN)")
+            return null
+        }
+
+        log.info("TG widget auth success: id={} username={}", req.id, req.username)
+
+        userRepository.getByTelegramId(req.id)?.let { return it }
+
+        val displayName = buildString {
+            append(req.firstName)
+            if (!req.lastName.isNullOrBlank()) append(" ${req.lastName}")
+        }.ifBlank { req.username ?: "TG_${req.id}" }
+
+        return userRepository.create(
+            User(
+                username = displayName,
+                login = "tg_${req.id}",
+                passwordHash = "",
+                telegramId = req.id,
+                habits = emptyList(),
             )
         )
     }

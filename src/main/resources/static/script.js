@@ -32,7 +32,23 @@ document.addEventListener('DOMContentLoaded', () => {
         currentUser = JSON.parse(savedUser)
         showDashboard()
         loadAll()
+        return
     }
+
+    // Load bot username and inject Telegram Login Widget
+    api('/config')
+        .then(cfg => {
+            if (!cfg?.botUsername) return
+            const script = document.createElement('script')
+            script.src = 'https://telegram.org/js/telegram-widget.js?22'
+            script.setAttribute('data-telegram-login', cfg.botUsername)
+            script.setAttribute('data-size', 'large')
+            script.setAttribute('data-radius', '8')
+            script.setAttribute('data-onauth', 'onTelegramWidgetAuth(user)')
+            script.setAttribute('data-request-access', 'write')
+            script.async = true
+            document.getElementById('tgWidgetContainer').appendChild(script)
+        })
 })
 
 /* ---------- HELPERS ---------- */
@@ -65,6 +81,24 @@ function api(url, options = {}) {
 function loadAll() {
     loadHabits()
     loadGroups()
+}
+
+/* ---------- TELEGRAM WIDGET ---------- */
+
+function onTelegramWidgetAuth(user) {
+
+    api('/auth/telegram/widget', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(user)
+    })
+        .then(loggedInUser => {
+            currentUser = loggedInUser
+            localStorage.setItem('currentUser', JSON.stringify(loggedInUser))
+            showDashboard()
+            loadAll()
+        })
+        .catch(e => alert('Telegram auth failed: ' + e.message))
 }
 
 /* ---------- LOGIN ---------- */
@@ -248,15 +282,22 @@ function displayGroups(groups) {
         div.className = "group"
 
         const isOwner = group.ownerLogin === currentUser.login
+        const count = group.members.length
+        const membersLabel = count === 1 ? "1 member" : `${count} members`
+
         const deleteBtn = isOwner
             ? `<button class="danger small" onclick="deleteGroup(${group.id})">Delete</button>`
             : ""
 
         div.innerHTML = `
-            <strong>${escapeHtml(group.name)}</strong>
-            <span>${group.members.length} members</span>
-            <button onclick="openGroup(${group.id})">Open</button>
-            ${deleteBtn}
+            <div class="group-info">
+                <strong>${escapeHtml(group.name)}</strong>
+                <span class="group-meta">${membersLabel}</span>
+            </div>
+            <div class="group-actions">
+                <button class="small" onclick="openGroup(${group.id})">Open</button>
+                ${deleteBtn}
+            </div>
         `
 
         list.appendChild(div)
