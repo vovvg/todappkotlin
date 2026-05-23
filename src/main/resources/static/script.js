@@ -1,5 +1,6 @@
 let currentUser = null
 let openedGroup = null
+let botUsername = ''
 
 const tg = window.Telegram?.WebApp
 
@@ -10,6 +11,9 @@ document.addEventListener('DOMContentLoaded', () => {
         tg.expand()
         document.body.classList.add('tg-mode')
     }
+
+    // Always fetch bot config so botUsername is available for invite links
+    api('/config').then(cfg => { if (cfg?.botUsername) botUsername = cfg.botUsername })
 
     if (tg?.initData) {
         api('/auth/telegram', {
@@ -22,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('currentUser', JSON.stringify(user))
                 showDashboard()
                 loadAll()
+                checkPendingInvite()
             })
             .catch(e => alert('Telegram auth failed: ' + e.message))
         return
@@ -32,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentUser = JSON.parse(savedUser)
         showDashboard()
         loadAll()
+        checkPendingInvite()
         return
     }
 
@@ -39,6 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     api('/config')
         .then(cfg => {
             if (!cfg?.botUsername) return
+            botUsername = cfg.botUsername
             const script = document.createElement('script')
             script.src = 'https://telegram.org/js/telegram-widget.js?22'
             script.setAttribute('data-telegram-login', cfg.botUsername)
@@ -97,8 +104,47 @@ function onTelegramWidgetAuth(user) {
             localStorage.setItem('currentUser', JSON.stringify(loggedInUser))
             showDashboard()
             loadAll()
+            checkPendingInvite()
         })
         .catch(e => alert('Telegram auth failed: ' + e.message))
+}
+
+/* ---------- INVITE ---------- */
+
+function checkPendingInvite() {
+    // TG Mini App: launched via t.me/bot?startapp=invite_<id>
+    const startParam = tg?.initDataUnsafe?.start_param
+        ?? new URLSearchParams(location.search).get('join')
+    if (!startParam) return
+    const match = String(startParam).match(/^invite_(\d+)$/)
+    if (!match) return
+    joinGroupByInvite(parseInt(match[1]))
+}
+
+function joinGroupByInvite(groupId) {
+    api(`/groups/${groupId}/members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ login: currentUser.login })
+    })
+        .then(() => {
+            loadGroups()
+            openGroup(groupId)
+        })
+        .catch(e => alert('Could not join group: ' + e.message))
+}
+
+function copyInviteLink() {
+    if (!openedGroup) return
+    const url = botUsername
+        ? `https://t.me/${botUsername}?startapp=invite_${openedGroup.id}`
+        : `${location.origin}${location.pathname}?join=${openedGroup.id}`
+    navigator.clipboard.writeText(url)
+        .then(() => showToast('Invite link copied!'))
+        .catch(() => {
+            // fallback for browsers without clipboard API
+            prompt('Copy this link:', url)
+        })
 }
 
 /* ---------- LOGIN ---------- */
@@ -127,6 +173,7 @@ function login() {
 
             showDashboard()
             loadAll()
+            checkPendingInvite()
         })
         .catch(e => alert(e.message))
 }
@@ -281,13 +328,8 @@ function displayGroups(groups) {
         const div = document.createElement("div")
         div.className = "group"
 
-        const isOwner = group.ownerLogin === currentUser.login
         const count = group.members.length
         const membersLabel = count === 1 ? "1 member" : `${count} members`
-
-        const deleteBtn = isOwner
-            ? `<button class="danger small" onclick="deleteGroup(${group.id})">Delete</button>`
-            : ""
 
         div.innerHTML = `
             <div class="group-info">
@@ -296,7 +338,6 @@ function displayGroups(groups) {
             </div>
             <div class="group-actions">
                 <button class="small" onclick="openGroup(${group.id})">Open</button>
-                ${deleteBtn}
             </div>
         `
 
@@ -692,6 +733,14 @@ function logout() {
  */
 function tgDisplay(obj) {
     return obj?.telegramUsername ? '@' + obj.telegramUsername : (obj?.username ?? '')
+}
+
+function showToast(msg) {
+    const t = document.createElement('div')
+    t.className = 'toast'
+    t.textContent = msg
+    document.body.appendChild(t)
+    setTimeout(() => t.remove(), 2500)
 }
 
 function escapeHtml(s) {
