@@ -302,6 +302,30 @@ function deleteGroup(groupId) {
         .catch(e => alert(e.message))
 }
 
+function deleteOpenedGroup() {
+
+    if (!openedGroup) return
+    if (!confirm("Delete this group? This will remove all its habits too.")) return
+
+    api(`/groups/${openedGroup.id}?requesterLogin=${encodeURIComponent(currentUser.login)}`, {
+        method: "DELETE"
+    })
+        .then(backToDashboard)
+        .catch(e => alert(e.message))
+}
+
+function leaveOpenedGroup(userId) {
+
+    if (!openedGroup) return
+    if (!confirm("Leave this group?")) return
+
+    api(`/groups/${openedGroup.id}/members/${userId}`, {
+        method: "DELETE"
+    })
+        .then(backToDashboard)
+        .catch(e => alert(e.message))
+}
+
 function openGroup(groupId) {
 
     api(`/groups/${groupId}?userLogin=${encodeURIComponent(currentUser.login)}`)
@@ -331,6 +355,18 @@ function renderGroup(group) {
 
     document.getElementById("groupTitle").innerText = group.name
 
+    const isOwner = group.ownerLogin === currentUser.login
+    const me = group.members.find(m => m.login === currentUser.login)
+
+    const actionEl = document.getElementById("groupAction")
+    if (isOwner) {
+        actionEl.innerHTML = `<button class="danger" onclick="deleteOpenedGroup()">Delete Group</button>`
+    } else if (me) {
+        actionEl.innerHTML = `<button class="danger" onclick="leaveOpenedGroup(${me.id})">Leave Group</button>`
+    } else {
+        actionEl.innerHTML = ""
+    }
+
     const members = document.getElementById("groupMembers")
     const habits = document.getElementById("groupHabits")
 
@@ -343,8 +379,8 @@ function renderGroup(group) {
         div.className = "member"
 
         const removeButton =
-            m.login === currentUser.login
-                ? "" // can't remove yourself from the dashboard view
+            m.login === currentUser.login || !isOwner
+                ? ""
                 : `<button class="danger small" onclick="removeMemberFromOpenedGroup(${m.id})">Remove</button>`
 
         div.innerHTML = `
