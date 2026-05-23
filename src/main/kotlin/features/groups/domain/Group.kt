@@ -8,6 +8,7 @@ import kotlinx.serialization.Serializable
 data class Group(
     val id: Int,
     val name: String,
+    val ownerLogin: String? = null,
     val members: List<User>,
     val habits: List<Habit>
 )

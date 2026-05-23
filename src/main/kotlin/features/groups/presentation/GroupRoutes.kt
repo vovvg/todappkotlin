@@ -111,6 +111,35 @@ fun Route.groupRoutes(
             call.respond(HttpStatusCode.OK)
         }
 
+        delete("/{groupId}") {
+
+            val groupId =
+                call.parameters["groupId"]
+                    ?.toIntOrNull()
+                    ?: return@delete call.respond(
+                        HttpStatusCode.BadRequest
+                    )
+
+            val requesterLogin =
+                call.request.queryParameters["requesterLogin"]
+                    ?: return@delete call.respond(
+                        HttpStatusCode.BadRequest,
+                        "requesterLogin required"
+                    )
+
+            val success =
+                service.deleteGroup(groupId, requesterLogin)
+
+            if (!success) {
+                return@delete call.respond(
+                    HttpStatusCode.Forbidden,
+                    "Not the group owner"
+                )
+            }
+
+            call.respond(HttpStatusCode.NoContent)
+        }
+
         delete("/{groupId}/members/{userId}") {
 
             val groupId =

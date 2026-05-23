@@ -14,6 +14,7 @@ class GroupDAO(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<GroupDAO>(GroupTable)
 
     var name by GroupTable.name
+    var owner by UserDAO optionalReferencedOn GroupTable.ownerId
 
     var members by UserDAO via UserGroupTable
     val habits by HabitDAO optionalReferrersOn HabitTable.ownerGroup
@@ -22,6 +23,7 @@ class GroupDAO(id: EntityID<Int>) : IntEntity(id) {
 fun GroupDAO.toModel() = Group(
     id = this.id.value,
     name = this.name,
+    ownerLogin = this.owner?.login,
     members = this.members.map { it.toModel() },
     habits = this.habits.map { it.toModel() }
 )

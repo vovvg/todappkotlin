@@ -247,12 +247,16 @@ function displayGroups(groups) {
         const div = document.createElement("div")
         div.className = "group"
 
+        const isOwner = group.ownerLogin === currentUser.login
+        const deleteBtn = isOwner
+            ? `<button class="danger small" onclick="deleteGroup(${group.id})">Delete</button>`
+            : ""
+
         div.innerHTML = `
             <strong>${escapeHtml(group.name)}</strong>
             <span>${group.members.length} members</span>
-            <button onclick="openGroup(${group.id})">
-                Open
-            </button>
+            <button onclick="openGroup(${group.id})">Open</button>
+            ${deleteBtn}
         `
 
         list.appendChild(div)
@@ -284,6 +288,17 @@ function createGroup() {
 
             loadGroups()
         })
+        .catch(e => alert(e.message))
+}
+
+function deleteGroup(groupId) {
+
+    if (!confirm("Delete this group? This will remove all its habits too.")) return
+
+    api(`/groups/${groupId}?requesterLogin=${encodeURIComponent(currentUser.login)}`, {
+        method: "DELETE"
+    })
+        .then(loadGroups)
         .catch(e => alert(e.message))
 }
 

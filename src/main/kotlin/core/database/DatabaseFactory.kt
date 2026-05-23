@@ -51,6 +51,7 @@ object DatabaseFactory {
             exec("ALTER TABLE habits DROP COLUMN IF EXISTS streak")
             exec("ALTER TABLE habit_progress ADD COLUMN IF NOT EXISTS last_checkin_day BIGINT")
             exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS telegram_id BIGINT UNIQUE")
+            exec("ALTER TABLE groups ADD COLUMN IF NOT EXISTS owner_id INTEGER REFERENCES users(id) ON DELETE SET NULL")
         }
     }
 

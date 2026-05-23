@@ -19,6 +19,7 @@ data class AddUserToGroupRequest(
 data class GroupResponse(
     val id: Int,
     val name: String,
+    val ownerLogin: String? = null,
     val members: List<GroupMemberResponse>,
     val habits: List<GroupHabitResponse>
 )
@@ -55,6 +56,7 @@ fun Group.toResponse(habits: List<Habit> = this.habits) =
     GroupResponse(
         id = id,
         name = name,
+        ownerLogin = ownerLogin,
         members = members.map {
             GroupMemberResponse(
                 it.id,

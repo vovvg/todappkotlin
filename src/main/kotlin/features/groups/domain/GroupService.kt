@@ -72,4 +72,13 @@ class GroupService(
                 groupId
             )
     }
+
+    suspend fun deleteGroup(
+        groupId: Int,
+        requesterLogin: String
+    ): Boolean {
+
+        return groupRepository
+            .deleteGroup(groupId, requesterLogin)
+    }
 }
