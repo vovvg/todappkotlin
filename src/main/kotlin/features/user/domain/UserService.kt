@@ -8,6 +8,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 import kotlinx.serialization.json.contentOrNull
+import org.slf4j.LoggerFactory
 import java.net.URLDecoder
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
@@ -15,6 +16,7 @@ import javax.crypto.spec.SecretKeySpec
 class UserService(
     private val userRepository: UserRepository,
 ) {
+    private val log = LoggerFactory.getLogger(UserService::class.java)
 
     suspend fun login(login: String, password: String): User? {
         val user = userRepository.getByLogin(login) ?: return null
@@ -60,6 +62,11 @@ class UserService(
     }
 
     private fun validateAndParseInitData(initData: String, botToken: String): TgUser? {
+        if (botToken.isBlank()) {
+            log.error("TG auth failed: TG_BOT_TOKEN is not set")
+            return null
+        }
+
         val params = mutableMapOf<String, String>()
         for (part in initData.split("&")) {
             val idx = part.indexOf("=")
@@ -67,7 +74,10 @@ class UserService(
             params[part.substring(0, idx)] = URLDecoder.decode(part.substring(idx + 1), "UTF-8")
         }
 
-        val hash = params.remove("hash") ?: return null
+        val hash = params.remove("hash") ?: run {
+            log.error("TG auth failed: no 'hash' field in initData")
+            return null
+        }
 
         val dataCheckString = params.entries
             .sortedBy { it.key }
@@ -77,17 +87,27 @@ class UserService(
         val computedHash = hmacSha256(dataCheckString.toByteArray(Charsets.UTF_8), secretKey)
         val computedHashHex = computedHash.joinToString("") { "%02x".format(it) }
 
-        if (!computedHashHex.equals(hash, ignoreCase = true)) return null
+        if (!computedHashHex.equals(hash, ignoreCase = true)) {
+            log.error("TG auth failed: HMAC mismatch (check TG_BOT_TOKEN)")
+            log.debug("dataCheckString:\n{}", dataCheckString)
+            return null
+        }
 
-        val userJson = params["user"] ?: return null
+        val userJson = params["user"] ?: run {
+            log.error("TG auth failed: no 'user' field in initData")
+            return null
+        }
+
         return try {
             val obj = Json.parseToJsonElement(userJson).jsonObject
             val id = obj["id"]?.jsonPrimitive?.long ?: return null
             val firstName = obj["first_name"]?.jsonPrimitive?.contentOrNull ?: ""
             val lastName = obj["last_name"]?.jsonPrimitive?.contentOrNull
             val username = obj["username"]?.jsonPrimitive?.contentOrNull
+            log.info("TG auth success: id={} username={}", id, username)
             TgUser(id, firstName, lastName, username)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            log.error("TG auth failed: error parsing user JSON - {}", e.message)
             null
         }
     }
