@@ -83,7 +83,8 @@ class UserService(
             .sortedBy { it.key }
             .joinToString("\n") { "${it.key}=${it.value}" }
 
-        val secretKey = hmacSha256("WebAppData".toByteArray(Charsets.UTF_8), botToken.toByteArray(Charsets.UTF_8))
+        // Telegram: secret_key = HMAC_SHA256(key="WebAppData", message=botToken)
+        val secretKey = hmacSha256(botToken.toByteArray(Charsets.UTF_8), "WebAppData".toByteArray(Charsets.UTF_8))
         val computedHash = hmacSha256(dataCheckString.toByteArray(Charsets.UTF_8), secretKey)
         val computedHashHex = computedHash.joinToString("") { "%02x".format(it) }
 
