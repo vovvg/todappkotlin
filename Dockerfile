@@ -14,7 +14,7 @@ RUN gradle buildFatJar --no-daemon
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-COPY --from=builder /app/build/libs/todapp-0.0.1-all.jar app.jar
+COPY --from=builder /app/build/libs/app.jar app.jar
 
 EXPOSE 8080
 

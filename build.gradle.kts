@@ -14,6 +14,12 @@ application {
     mainClass = "io.ktor.server.netty.EngineMain"
 }
 
+ktor {
+    fatJar {
+        archiveFileName.set("app.jar")
+    }
+}
+
 dependencies {
     implementation("org.postgresql:postgresql:42.7.7")
     implementation("com.zaxxer:HikariCP:5.1.0")
