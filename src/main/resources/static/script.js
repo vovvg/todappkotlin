@@ -380,8 +380,9 @@ function openGroup(groupId) {
             renderGroup(group)
 
             if (tg?.BackButton) {
-                tg.BackButton.show()
+                tg.BackButton.offClick(backToDashboard)
                 tg.BackButton.onClick(backToDashboard)
+                tg.BackButton.show()
             }
         })
         .catch(e => alert(e.message))
