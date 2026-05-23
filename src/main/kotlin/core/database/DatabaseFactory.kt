@@ -61,7 +61,8 @@ object DatabaseFactory {
         if (rawUrl != null) {
             val uri = URI(rawUrl)
             val (user, pass) = (uri.userInfo ?: ":").split(":", limit = 2)
-            val jdbcUrl = "jdbc:postgresql://${uri.host}:${uri.port}${uri.path}"
+            val port = if (uri.port == -1) 5432 else uri.port
+            val jdbcUrl = "jdbc:postgresql://${uri.host}:${port}${uri.path}"
             return Triple(jdbcUrl, user, pass)
         }
         return Triple(
