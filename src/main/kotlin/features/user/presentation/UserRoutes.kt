@@ -11,9 +11,14 @@ import io.ktor.server.routing.route
 
 fun Route.userRoutes(service: UserService, botToken: String, botUsername: String) {
 
-    // Public config for the frontend (bot username for the Login Widget)
     get("/config") {
         call.respond(BotConfigResponse(botUsername))
+    }
+
+    get("/user/search") {
+        val query = call.request.queryParameters["query"]?.trim() ?: ""
+        val users = service.searchUsers(query)
+        call.respond(users.map { UserSearchResponse(it.login, it.username) })
     }
     route("/user") {
         post("/login") {

@@ -123,13 +123,16 @@
 
     <hr>
 
-    <div class="input-group">
-        <input
-                id="groupUserInput"
-                placeholder="User login">
-        <button onclick="addMemberToOpenedGroup()">
-            Add User
-        </button>
+    <div class="search-wrap">
+        <div class="input-group">
+            <input
+                    id="groupUserInput"
+                    placeholder="Search by name..."
+                    oninput="onGroupUserInput(event)"
+                    autocomplete="off">
+            <button onclick="addMemberToOpenedGroup()">Add</button>
+        </div>
+        <div id="userSearchDropdown" class="search-dropdown hidden"></div>
     </div>
 
     <div class="input-group">

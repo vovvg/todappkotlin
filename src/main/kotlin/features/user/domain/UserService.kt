@@ -46,6 +46,11 @@ class UserService(
         )
     }
 
+    suspend fun searchUsers(query: String): List<User> {
+        if (query.length < 2) return emptyList()
+        return userRepository.searchByUsername(query)
+    }
+
     suspend fun loginOrRegisterWithTelegram(initData: String, botToken: String): User? {
         val tgUser = validateAndParseInitData(initData, botToken) ?: return null
 

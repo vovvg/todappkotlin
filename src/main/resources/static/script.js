@@ -512,25 +512,73 @@ function addHabitToOpenedGroup() {
         .catch(e => alert(e.message))
 }
 
-function addMemberToOpenedGroup() {
+let _searchTimer = null
 
+function onGroupUserInput(e) {
+    const query = e.target.value.trim()
+    clearTimeout(_searchTimer)
+    if (query.length < 2) { hideUserSearch(); return }
+    _searchTimer = setTimeout(() => {
+        api(`/user/search?query=${encodeURIComponent(query)}`)
+            .then(showUserSearchResults)
+            .catch(() => {})
+    }, 250)
+}
+
+function showUserSearchResults(users) {
+    const dropdown = document.getElementById("userSearchDropdown")
+    dropdown.innerHTML = ""
+    if (!users || users.length === 0) {
+        dropdown.classList.add("hidden")
+        return
+    }
+    users.forEach(u => {
+        const item = document.createElement("div")
+        item.className = "search-result-item"
+        const initials = u.username.trim().split(" ")
+            .map(w => w[0]).slice(0, 2).join("").toUpperCase()
+        item.innerHTML = `
+            <div class="result-avatar">${escapeHtml(initials)}</div>
+            <span class="result-name">${escapeHtml(u.username)}</span>
+        `
+        item.onclick = () => {
+            hideUserSearch()
+            document.getElementById("groupUserInput").value = ""
+            addUserToGroupByLogin(u.login)
+        }
+        dropdown.appendChild(item)
+    })
+    dropdown.classList.remove("hidden")
+}
+
+function hideUserSearch() {
+    const d = document.getElementById("userSearchDropdown")
+    if (d) d.classList.add("hidden")
+}
+
+function addUserToGroupByLogin(login) {
     if (!openedGroup) return
-
-    const input = document.getElementById("groupUserInput")
-    const login = input.value
-
-    if (!login) return
-
     api(`/groups/${openedGroup.id}/members`, {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ login })
     })
-        .then(() => {
-            input.value = ""
-            refreshOpenedGroup()
-        })
+        .then(refreshOpenedGroup)
         .catch(e => alert(e.message))
+}
+
+function addMemberToOpenedGroup() {
+
+    if (!openedGroup) return
+
+    const input = document.getElementById("groupUserInput")
+    const login = input.value.trim()
+
+    if (!login) return
+
+    hideUserSearch()
+    addUserToGroupByLogin(login)
+    input.value = ""
 }
 
 function removeMemberFromOpenedGroup(userId) {

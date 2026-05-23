@@ -5,6 +5,7 @@ import com.application.core.database.dao.suspendTransaction
 import com.application.core.database.dao.toModel
 import com.application.core.database.tables.UserTable
 import com.application.features.user.domain.User
+import org.jetbrains.exposed.sql.lowerCase
 
 class UserRepository {
     suspend fun allUser(): List<User> = suspendTransaction {
@@ -33,6 +34,14 @@ class UserRepository {
             telegramId = user.telegramId
         }
         dao.toModel()
+    }
+
+    suspend fun searchByUsername(query: String): List<User> = suspendTransaction {
+        UserDAO.find {
+            UserTable.username.lowerCase() like "%${query.lowercase()}%"
+        }
+            .limit(8)
+            .map { it.toModel() }
     }
 
     suspend fun remove(login: String): Boolean {

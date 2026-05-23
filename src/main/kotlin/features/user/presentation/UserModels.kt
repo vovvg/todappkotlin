@@ -43,3 +43,9 @@ data class TelegramWidgetAuthRequest(
 data class BotConfigResponse(
     val botUsername: String,
 )
+
+@Serializable
+data class UserSearchResponse(
+    val login: String,
+    val username: String,
+)
