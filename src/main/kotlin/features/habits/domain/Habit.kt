@@ -19,6 +19,7 @@ data class MemberStreak(
     val userId: Int,
     val login: String,
     val username: String,
+    val telegramUsername: String? = null,
     val streak: Long,
     val checkedInToday: Boolean,
 )

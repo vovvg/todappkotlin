@@ -19,7 +19,8 @@ data class RegisterRequest(
 @Serializable
 data class LoginResponse(
     val username: String,
-    val login: String
+    val login: String,
+    val telegramUsername: String? = null,
 )
 
 @Serializable

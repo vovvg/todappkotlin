@@ -41,6 +41,7 @@ data class MemberStreakResponse(
     val userId: Int,
     val login: String,
     val username: String,
+    val telegramUsername: String? = null,
     val streak: Long,
     val checkedInToday: Boolean,
 )
@@ -49,7 +50,8 @@ data class MemberStreakResponse(
 data class GroupMemberResponse(
     val id: Int,
     val username: String,
-    val login: String
+    val login: String,
+    val telegramUsername: String? = null,
 )
 
 fun Group.toResponse(habits: List<Habit> = this.habits) =
@@ -59,9 +61,10 @@ fun Group.toResponse(habits: List<Habit> = this.habits) =
         ownerLogin = ownerLogin,
         members = members.map {
             GroupMemberResponse(
-                it.id,
-                it.username,
-                it.login
+                id = it.id,
+                username = it.username,
+                login = it.login,
+                telegramUsername = it.telegramUsername,
             )
         },
         habits = habits.map {
@@ -75,6 +78,7 @@ fun Group.toResponse(habits: List<Habit> = this.habits) =
                         userId = ms.userId,
                         login = ms.login,
                         username = ms.username,
+                        telegramUsername = ms.telegramUsername,
                         streak = ms.streak,
                         checkedInToday = ms.checkedInToday,
                     )

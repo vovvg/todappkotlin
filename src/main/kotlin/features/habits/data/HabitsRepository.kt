@@ -84,6 +84,7 @@ class HabitsRepository {
                     userId = member.id.value,
                     login = member.login,
                     username = member.username,
+                    telegramUsername = member.telegramUsername,
                     streak = effectiveStreak(progress, today),
                     checkedInToday = progress?.lastCheckinDay == today,
                 )

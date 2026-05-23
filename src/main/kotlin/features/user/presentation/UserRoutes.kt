@@ -27,7 +27,7 @@ fun Route.userRoutes(service: UserService, botToken: String, botUsername: String
             val user = service.login(req.login, req.password)
                 ?: return@post call.respond(HttpStatusCode.Unauthorized)
 
-            call.respond(LoginResponse(user.username, user.login))
+            call.respond(LoginResponse(user.username, user.login, user.telegramUsername))
         }
 
         post("/register") {
@@ -36,7 +36,7 @@ fun Route.userRoutes(service: UserService, botToken: String, botUsername: String
             val user = service.register(req.username, req.login, req.password)
                 ?: return@post call.respond(HttpStatusCode.Conflict)
 
-            call.respond(LoginResponse(user.username, user.login))
+            call.respond(LoginResponse(user.username, user.login, user.telegramUsername))
         }
     }
 
@@ -46,7 +46,7 @@ fun Route.userRoutes(service: UserService, botToken: String, botUsername: String
         val user = service.loginOrRegisterWithTelegram(req.initData, botToken)
             ?: return@post call.respond(HttpStatusCode.Unauthorized)
 
-        call.respond(LoginResponse(user.username, user.login))
+        call.respond(LoginResponse(user.username, user.login, user.telegramUsername))
     }
 
     post("/auth/telegram/widget") {
@@ -55,6 +55,6 @@ fun Route.userRoutes(service: UserService, botToken: String, botUsername: String
         val user = service.loginOrRegisterWithTelegramWidget(req, botToken)
             ?: return@post call.respond(HttpStatusCode.Unauthorized)
 
-        call.respond(LoginResponse(user.username, user.login))
+        call.respond(LoginResponse(user.username, user.login, user.telegramUsername))
     }
 }

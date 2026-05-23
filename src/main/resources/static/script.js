@@ -425,7 +425,7 @@ function renderGroup(group) {
                 : `<button class="danger small" onclick="removeMemberFromOpenedGroup(${m.id})">Remove</button>`
 
         div.innerHTML = `
-            <span>${escapeHtml(m.username)} (${escapeHtml(m.login)})</span>
+            <span>${escapeHtml(tgDisplay(m))}</span>
             ${removeButton}
         `
 
@@ -477,7 +477,7 @@ function renderGroup(group) {
 
                 item.innerHTML = `
                     <span class="member-streak-name" title="${escapeHtml(ms.username)}">
-                        ${escapeHtml(ms.login)}
+                        ${escapeHtml(tgDisplay(ms))}
                     </span>
                     <span class="member-streak-value">🔥 ${ms.streak ?? 0}</span>
                     <span class="member-streak-status">${ms.checkedInToday ? "✓" : "·"}</span>
@@ -537,14 +537,17 @@ function showUserSearchResults(users) {
         item.className = "search-result-item"
         const initials = u.username.trim().split(" ")
             .map(w => w[0]).slice(0, 2).join("").toUpperCase()
-        const tgHandle = u.telegramUsername
-            ? `<span class="result-handle">@${escapeHtml(u.telegramUsername)}</span>`
+        const primaryName = u.telegramUsername
+            ? `@${escapeHtml(u.telegramUsername)}`
+            : escapeHtml(u.username)
+        const subtitle = u.telegramUsername
+            ? `<span class="result-handle">${escapeHtml(u.username)}</span>`
             : ""
         item.innerHTML = `
             <div class="result-avatar">${escapeHtml(initials)}</div>
             <div class="result-info">
-                <span class="result-name">${escapeHtml(u.username)}</span>
-                ${tgHandle}
+                <span class="result-name">${primaryName}</span>
+                ${subtitle}
             </div>
         `
         item.onclick = () => {
@@ -659,7 +662,7 @@ function showDashboard() {
     document.getElementById("groupDetails").classList.add("hidden")
 
     document.getElementById("welcomeTitle").innerText =
-        `Welcome, ${currentUser.username}`
+        `Welcome, ${tgDisplay(currentUser)}`
 
     if (tg?.initData) {
         document.getElementById("logoutButton").classList.add("hidden")
@@ -680,6 +683,15 @@ function logout() {
 }
 
 /* ---------- UTIL ---------- */
+
+/**
+ * Returns "@handle" if the object has a telegramUsername, otherwise falls back
+ * to the regular username field.  Works with currentUser, GroupMemberResponse,
+ * MemberStreakResponse, and UserSearchResponse shapes.
+ */
+function tgDisplay(obj) {
+    return obj?.telegramUsername ? '@' + obj.telegramUsername : (obj?.username ?? '')
+}
 
 function escapeHtml(s) {
     if (s == null) return ""
